@@ -11,4 +11,6 @@ mongoose.Promise = global.Promise
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
+app.use(require('./routes/router'))
+
 app.listen(PORT, () => console.log('App is running at local port ' + PORT))
