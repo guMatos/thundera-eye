@@ -25,7 +25,7 @@ router.post('/register', (req, res) => {
 router.post('/login', (req, res) => {
 	User.findOne({"username": req.body.username}, (err, doc) => {
 		if (err) return res.status(500).send('an unexpected error ocurred')
-		if (!doc) return res.status(404).send('user not found')
+		if (!doc) return res.status(204).send('user not found')
 		
 		bcrypt.compare(req.body.password, doc.password, (err, match) => {
 			res.send(match)
