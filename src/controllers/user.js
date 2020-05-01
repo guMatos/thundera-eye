@@ -3,11 +3,13 @@ const bodyParser = require('body-parser')
 const bcrypt = require('bcrypt-nodejs')
 const jwt = require('jsonwebtoken')
 const User = require('../schemas/User')
-require('dotenv').config({ path: '.../.env' })
+const jwtExtensions = require('../middleware/jwtExtensions')
+require('dotenv').config({ path: '.env' })
 
 const router = express.Router()
 router.use(bodyParser.urlencoded({ extended: false }))
 router.use(bodyParser.json())
+const extensions = new jwtExtensions()
 
 router.post('/register', (req, res) => {
 	var salt = bcrypt.genSaltSync(10)
@@ -24,13 +26,31 @@ router.post('/register', (req, res) => {
 	})
 })
 
+router.patch('/edit/password', extensions.verifyJWT, async (req, res) => {
+	var tokenId = jwt.decode(req.headers['x-access-token']).id
+	var user = await User.findById(tokenId)
+
+	bcrypt.compare(req.body.oldPassword, user.password, async (err, match) => {
+		if (err) return res.status(500).send('an unexpected error ocurred')
+		if (!match) { return res.status(400).send('old password is invalid') }
+
+		var salt = bcrypt.genSaltSync(10)
+		var newPassword = bcrypt.hashSync(req.body.newPassword, salt)
+		var filter = { username: user.username }
+		var update = { password: newPassword }
+
+		await User.updateOne(filter, update)
+		return res.send('user password changed')
+	})
+})
+
 router.post('/login', (req, res) => {
 	User.findOne({"username": req.body.username}, (err, doc) => {
 		if (err) return res.status(500).send('an unexpected error ocurred')
 		if (!doc) return res.status(204).send('user not found')
 		
 		bcrypt.compare(req.body.password, doc.password, (err, match) => {
-			if (!match) { res.status(400).send({ auth: false, token: null }) }
+			if (!match) { return res.status(400).send({ auth: false, token: null }) }
 			var id = doc.id
 			var token = jwt.sign({ id }, process.env.SECRET, {
 				expiresIn: 3600
