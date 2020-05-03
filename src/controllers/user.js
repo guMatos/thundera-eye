@@ -32,7 +32,7 @@ router.patch('/edit/password', extensions.verifyJWT, async (req, res) => {
 
 	bcrypt.compare(req.body.oldPassword, user.password, async (err, match) => {
 		if (err) return res.status(500).send('an unexpected error ocurred')
-		if (!match) { return res.status(400).send('old password is invalid') }
+		if (!match) return res.status(400).send('old password is invalid')
 
 		var salt = bcrypt.genSaltSync(10)
 		var newPassword = bcrypt.hashSync(req.body.newPassword, salt)
