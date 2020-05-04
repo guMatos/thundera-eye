@@ -11,6 +11,21 @@ router.use(bodyParser.urlencoded({ extended: false }))
 router.use(bodyParser.json())
 const extensions = new jwtExtensions()
 
+router.post('/login', (req, res) => {
+	User.findOne({"username": req.body.username}, (err, doc) => {
+		if (err) return res.status(500).send('an unexpected error ocurred')
+		if (!doc) return res.status(204).send('user not found')
+		
+		bcrypt.compare(req.body.password, doc.password, (err, match) => {
+			if (err) return res.status(500).send('an unexpected error ocurred')
+			if (!match) return res.status(400).send({ auth: false, token: null })
+			var id = doc.id
+			var token = jwt.sign({ id }, process.env.SECRET, { expiresIn: 3600 })
+			res.send({ auth: true, token: token })
+		})
+	})
+})
+
 router.post('/register', (req, res) => {
 	var salt = bcrypt.genSaltSync(10)
 	var encryptedPassword = bcrypt.hashSync(req.body.password, salt)
@@ -41,21 +56,6 @@ router.patch('/edit/password', extensions.verifyJWT, async (req, res) => {
 
 		await User.updateOne(filter, update)
 		return res.send('user password changed')
-	})
-})
-
-router.post('/login', (req, res) => {
-	User.findOne({"username": req.body.username}, (err, doc) => {
-		if (err) return res.status(500).send('an unexpected error ocurred')
-		if (!doc) return res.status(204).send('user not found')
-		
-		bcrypt.compare(req.body.password, doc.password, (err, match) => {
-			if (err) return res.status(500).send('an unexpected error ocurred')
-			if (!match) return res.status(400).send({ auth: false, token: null })
-			var id = doc.id
-			var token = jwt.sign({ id }, process.env.SECRET, { expiresIn: 3600 })
-			res.send({ auth: true, token: token })
-		})
 	})
 })
 
