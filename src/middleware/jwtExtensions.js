@@ -7,7 +7,7 @@ class jwtExtensions {
 		if (!token) return res.status(401).send()
 
 		jwt.verify(token, process.env.SECRET, (err) => {
-			if (err) return res.status(401).send('failed to authenticate token')
+			if (err) return res.status(401).send({ message: 'failed to authenticate token' })
 		})
 
 		next()
