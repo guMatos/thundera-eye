@@ -51,10 +51,9 @@ router.patch('/edit/password', extensions.verifyJWT, async (req, res) => {
 
 		var salt = bcrypt.genSaltSync(10)
 		var newPassword = bcrypt.hashSync(req.body.newPassword, salt)
-		var filter = { username: user.username }
 		var update = { password: newPassword }
 
-		await User.updateOne(filter, update)
+		await user.updateOne(update)
 		return res.send({ message: 'user password changed' })
 	})
 })
