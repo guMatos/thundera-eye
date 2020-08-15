@@ -42,8 +42,11 @@ router.post('/register', (req, res) => {
 })
 
 router.patch('/edit/password', extensions.verifyJWT, async (req, res) => {
-	var tokenId = jwt.decode(req.headers['x-access-token']).id
-	var user = await User.findById(tokenId)
+	var token = req.headers['authorization']
+	if (!token) res.status(401).send()
+	var userId = jwt.decode(token.substring(7)).id
+
+	var user = await User.findById(userId)
 
 	bcrypt.compare(req.body.oldPassword, user.password, async (err, match) => {
 		if (err) return res.status(500).send({ message: 'an unexpected error ocurred' })
