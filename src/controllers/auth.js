@@ -7,6 +7,6 @@ router.use(bodyParser.urlencoded({ extended: false }))
 router.use(bodyParser.json())
 const extensions = new jwtExtensions()
 
-router.post('/assert', extensions.verifyJWT, (req, res) => { return res.send() })
+router.post('/user/assert', extensions.verifyJWT, (req, res) => { return res.send() })
 
 module.exports = router
