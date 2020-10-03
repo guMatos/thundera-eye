@@ -10,14 +10,8 @@ router.use(bodyParser.json())
 router.post('/register/:clientName', async (req, res) => {
 	crypto.generateKeyPair('rsa', {
 		modulusLength: 4096,
-		publicKeyEncoding: {
-		  type: 'spki',
-		  format: 'pem'
-		},
-		privateKeyEncoding: {
-		  type: 'pkcs8',
-		  format: 'pem'
-		}
+		publicKeyEncoding: { type: 'spki', format: 'pem' },
+		privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
 	}, async (err, publicKey, privateKey) => {
 		if (err) return res.status(500).send({error: err})
 		var id = await crypto.randomBytes(15).toString('hex')
